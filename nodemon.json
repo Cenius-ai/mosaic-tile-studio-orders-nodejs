@@ -1,0 +1,7 @@
+{
+  "watch": ["src", "public"],
+  "ext": "js,ejs,css,json,sql",
+  "ignore": ["data/", "node_modules/"],
+  "delay": "150",
+  "verbose": false
+}
