@@ -1,0 +1,53 @@
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="<%= currentUser ? '/dashboard' : '/' %>">
+      <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="wordmark-text">Mosaic Tile Studio<span class="wordmark-sub">Orders</span></span>
+    </a>
+
+    <% if (currentUser) { %>
+      <nav class="topnav" aria-label="Primary">
+        <a href="/dashboard"<% if (currentPath === '/dashboard') { %> aria-current="page"<% } %>>Dashboard</a>
+        <a href="/commissions"<% if (currentPath.indexOf('/commissions') === 0) { %> aria-current="page"<% } %>>Commissions</a>
+        <a href="/stock"<% if (currentPath === '/stock') { %> aria-current="page"<% } %>>Glass room</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <button type="button" class="cmd-trigger" data-cmd-open aria-label="Open the jump-to menu">
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-search"></use></svg>
+          <span class="cmd-trigger-text">Jump to</span>
+          <kbd>⌘K</kbd>
+        </button>
+        <span class="studio-chip" title="Signed in as <%= currentUser.email %>">
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-user"></use></svg>
+          <span class="studio-chip-text"><%= currentUser.studio_name %></span>
+        </span>
+        <form method="post" action="/logout" class="inline-form">
+          <button type="submit" class="btn btn-ghost btn-sm">Sign out</button>
+        </form>
+      </div>
+    <% } else { %>
+      <div class="topbar-actions">
+        <a class="btn btn-ghost btn-sm" href="/signup">Create studio</a>
+        <a class="btn btn-primary btn-sm" href="/login">Sign in</a>
+      </div>
+    <% } %>
+  </div>
+</header>
+
+<% if (currentUser) { %>
+<dialog class="cmd-palette" id="cmd-palette" aria-label="Jump to a screen">
+  <form method="dialog" class="cmd-palette-head">
+    <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+    <input type="search" id="cmd-input" name="cmd" placeholder="Jump to a screen or commission…" autocomplete="off" aria-label="Search screens">
+    <button type="submit" class="btn btn-ghost btn-sm" value="close">Esc</button>
+  </form>
+  <ul class="cmd-list" id="cmd-list">
+    <li><a href="/dashboard"><span>Dashboard</span><small>Counts, recent commissions, low glass</small></a></li>
+    <li><a href="/commissions"><span>Commissions</span><small>Every mural and its sheet requirement</small></a></li>
+    <li><a href="/commissions/new"><span>New commission</span><small>Quote a new mural</small></a></li>
+    <li><a href="/stock"><span>Glass room</span><small>Smalti and vitreous stock by sheet</small></a></li>
+  </ul>
+  <p class="cmd-empty" id="cmd-empty" hidden>No screen matches that search.</p>
+</dialog>
+<% } %>

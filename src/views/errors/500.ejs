@@ -1,0 +1,19 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page page--narrow">
+  <div class="error-panel panel panel--float">
+    <p class="eyebrow">500</p>
+    <h1>The kiln tripped</h1>
+    <p class="page-sub">
+      Something failed while the studio was loading that page. Nothing you typed has been saved twice — try again,
+      and if it keeps happening the details are in the server log.
+    </p>
+    <div class="form-actions">
+      <% if (currentUser) { %>
+        <a class="btn btn-primary" href="/dashboard">Back to the dashboard</a>
+      <% } else { %>
+        <a class="btn btn-primary" href="/login">Sign in to the studio</a>
+      <% } %>
+    </div>
+  </div>
+</main>
+<%- include('../partials/foot') %>

@@ -1,0 +1,67 @@
+<%- include('../partials/head') %>
+<main id="main" class="auth-main">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <div>
+        <p class="auth-brand-name">Mosaic Tile Studio</p>
+        <p class="auth-brand-sub">Orders</p>
+      </div>
+    </div>
+
+    <h1 class="auth-title">Create a studio account</h1>
+    <p class="auth-lede">A fresh studio starts with an empty glass room and an empty order book.</p>
+
+    <form method="post" action="/signup" class="form" novalidate>
+      <div class="field">
+        <label for="studio_name">Studio name</label>
+        <input id="studio_name" name="studio_name" type="text" autocomplete="organization" value="<%= values.studio_name %>"
+          aria-invalid="<%= errors.studio_name ? 'true' : 'false' %>"
+          <% if (errors.studio_name) { %>aria-describedby="studio_name-error"<% } %>>
+        <% if (errors.studio_name) { %><p class="field-error" id="studio_name-error"><%= errors.studio_name %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" value="<%= values.email %>"
+          autocapitalize="none" spellcheck="false"
+          aria-invalid="<%= errors.email ? 'true' : 'false' %>"
+          <% if (errors.email) { %>aria-describedby="email-error"<% } %>>
+        <% if (errors.email) { %><p class="field-error" id="email-error"><%= errors.email %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" value="<%= values.username %>"
+          autocapitalize="none" spellcheck="false" aria-describedby="username-hint"
+          aria-invalid="<%= errors.username ? 'true' : 'false' %>">
+        <p class="field-hint" id="username-hint">3–24 characters: lowercase letters, numbers, hyphens or underscores.</p>
+        <% if (errors.username) { %><p class="field-error"><%= errors.username %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="field-with-action">
+          <input id="password" name="password" type="password" autocomplete="new-password"
+            aria-describedby="password-hint" aria-invalid="<%= errors.password ? 'true' : 'false' %>">
+          <button type="button" class="btn btn-ghost btn-sm" data-password-toggle="password" aria-pressed="false">Show</button>
+        </div>
+        <p class="field-hint" id="password-hint">At least 8 characters. Stored only as a bcrypt hash.</p>
+        <% if (errors.password) { %><p class="field-error"><%= errors.password %></p><% } %>
+      </div>
+
+      <div class="field">
+        <label for="confirm_password">Confirm password</label>
+        <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password"
+          aria-invalid="<%= errors.confirm_password ? 'true' : 'false' %>">
+        <% if (errors.confirm_password) { %><p class="field-error"><%= errors.confirm_password %></p><% } %>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" data-busy-label="Creating studio…">Create studio account</button>
+    </form>
+
+    <p class="auth-alt">Already have a studio? <a href="/login">Sign in</a></p>
+    <p class="demo-note">Demo: cenius@cenius.ai / cenius</p>
+  </div>
+</main>
+<%- include('../partials/foot') %>

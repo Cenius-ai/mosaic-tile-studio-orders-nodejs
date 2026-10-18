@@ -1,0 +1,21 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page page--narrow">
+  <div class="error-panel panel panel--float">
+    <p class="eyebrow">404</p>
+    <h1>That bench is empty</h1>
+    <p class="page-sub">
+      The page you asked for is not part of the studio. It may have been a commission that was deleted, or a
+      mistyped address.
+    </p>
+    <div class="form-actions">
+      <% if (currentUser) { %>
+        <a class="btn btn-primary" href="/dashboard">Back to the dashboard</a>
+        <a class="btn btn-ghost" href="/commissions">All commissions</a>
+      <% } else { %>
+        <a class="btn btn-primary" href="/login">Sign in to the studio</a>
+        <a class="btn btn-ghost" href="/">Back to the front page</a>
+      <% } %>
+    </div>
+  </div>
+</main>
+<%- include('../partials/foot') %>

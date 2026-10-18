@@ -1,0 +1,50 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page page--narrow">
+  <%- include('../partials/flash') %>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/commissions">Commissions</a>
+    <span aria-hidden="true">/</span>
+    <a href="/commissions/<%= commission.id %>"><%= commission.title %></a>
+    <span aria-hidden="true">/</span>
+    <span>Edit</span>
+  </nav>
+
+  <header class="page-head">
+    <div class="page-head-main">
+      <p class="eyebrow">Edit commission</p>
+      <h1><%= commission.title %></h1>
+      <p class="page-sub"><%= commission.client_name || 'No client recorded' %> · <%= fmt.dimensions(commission.width_cm, commission.height_cm) %></p>
+    </div>
+  </header>
+
+  <section class="panel panel--raise panel--pad">
+    <%- include('../partials/commission-form', {
+      values: values,
+      errors: errors,
+      formAction: '/commissions/' + commission.id,
+      submitLabel: 'Save changes',
+      busyLabel: 'Saving…',
+      cancelHref: '/commissions/' + commission.id
+    }) %>
+  </section>
+
+  <section class="panel panel--danger">
+    <header class="panel-head">
+      <h2 class="chip-label chip-label--danger">Delete commission</h2>
+    </header>
+    <p class="panel-body">
+      Deleting “<%= commission.title %>” removes its palette lines and the whole stage history. Glass already
+      reserved from it stays out of the glass room.
+    </p>
+    <form method="post" action="/commissions/<%= commission.id %>/delete" class="form-actions"
+      data-confirm="Delete “<%= commission.title %>” and its palette and stage history? This cannot be undone.">
+      <button type="submit" class="btn btn-destructive">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-trash"></use></svg>
+        Delete commission
+      </button>
+      <a class="btn btn-ghost" href="/commissions/<%= commission.id %>">Keep it</a>
+    </form>
+  </section>
+</main>
+<%- include('../partials/foot') %>

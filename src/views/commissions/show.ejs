@@ -1,0 +1,222 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page">
+  <%- include('../partials/flash') %>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/commissions">Commissions</a>
+    <span aria-hidden="true">/</span>
+    <span><%= commission.title %></span>
+  </nav>
+
+  <header class="detail-head">
+    <div class="detail-head-main">
+      <p class="eyebrow"><%= commission.client_name || 'No client recorded' %></p>
+      <h1><%= commission.title %></h1>
+      <p class="detail-meta">
+        <span class="chip chip--<%= fmt.statusToken(commission.status) %>"><%= fmt.statusLabel(commission.status) %></span>
+        <span class="detail-meta-item"><%= fmt.dimensions(commission.width_cm, commission.height_cm) %></span>
+        <span class="detail-meta-item <%= commission.status !== 'completed' && fmt.isOverdue(commission.due_date) ? 'is-overdue' : '' %>">
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-clock"></use></svg>
+          <%= fmt.dueLabel(commission.due_date) %>
+          <% if (commission.due_date) { %><span class="muted">(<%= fmt.formatDate(commission.due_date) %>)</span><% } %>
+        </span>
+        <span class="detail-meta-item"><%= fmt.number(lines.length) %> <%= fmt.plural(lines.length, 'colour') %></span>
+      </p>
+    </div>
+    <div class="detail-head-actions">
+      <a class="btn btn-secondary" href="/commissions/<%= commission.id %>/edit">Edit commission</a>
+      <form method="post" action="/commissions/<%= commission.id %>/allocate" class="inline-form">
+        <button type="submit" class="btn btn-primary"
+          <%= (allReserved || lines.length === 0) ? 'disabled' : '' %>
+          data-busy-label="Reserving…"
+          title="<%= allReserved ? 'Every colour line already has its sheets' : 'Deduct the sheets this palette needs from the glass room' %>">
+          <%= allReserved ? 'All sheets reserved' : 'Reserve sheets from stock' %>
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <% if (commission.notes) { %>
+    <section class="note-panel">
+      <h2 class="chip-label">Workshop notes</h2>
+      <p class="note-body"><%= commission.notes %></p>
+    </section>
+  <% } %>
+
+  <section class="panel panel--raise">
+    <header class="panel-head">
+      <h2 class="chip-label">Palette</h2>
+      <p class="panel-note">225 tesserae per smalti sheet · 400 per vitreous glass sheet</p>
+    </header>
+
+    <% if (lines.length === 0) { %>
+      <div class="empty empty--tight">
+        <p class="empty-title">No colours yet</p>
+        <p class="empty-body">Add the first tesserae colour below — the sheet count is worked out from the tesserae count and the material.</p>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table class="table table--palette">
+          <thead>
+            <tr>
+              <th scope="col">Colour</th>
+              <th scope="col">Material</th>
+              <th scope="col" class="num">Size</th>
+              <th scope="col" class="num">Tesserae</th>
+              <th scope="col" class="num">Sheets</th>
+              <th scope="col">Glass room</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% lines.forEach((line) => { %>
+              <tr>
+                <td data-label="Colour">
+                  <span class="colour-cell">
+                    <span class="swatch" style="background: <%= line.hex %>" aria-hidden="true"></span>
+                    <span>
+                      <span class="colour-name"><%= line.colour_name %></span>
+                      <span class="colour-hex"><%= line.hex %></span>
+                    </span>
+                  </span>
+                </td>
+                <td data-label="Material"><span class="muted"><%= materialLabels[line.material] %></span></td>
+                <td data-label="Size" class="num muted"><%= line.tessera_mm ? fmt.number(line.tessera_mm) + ' mm' : '—' %></td>
+                <td data-label="Tesserae" class="num"><%= fmt.number(line.tesserae_count) %></td>
+                <td data-label="Sheets" class="num strong"><%= fmt.number(line.sheets) %></td>
+                <td data-label="Glass room">
+                  <% if (line.sheets_reserved > 0) { %>
+                    <span class="chip chip--reserved">Reserved <%= fmt.number(line.sheets_reserved) %></span>
+                  <% } else { %>
+                    <span class="chip chip--pending">Not reserved</span>
+                  <% } %>
+                </td>
+                <td class="row-actions" data-label="Actions">
+                  <form method="post" action="/commissions/<%= commission.id %>/colors/<%= line.id %>/delete"
+                    data-confirm="Remove <%= line.colour_name %> from this palette?">
+                    <button type="submit" class="btn btn-ghost btn-sm" aria-label="Remove <%= line.colour_name %> from the palette">
+                      <svg class="icon icon-sm" aria-hidden="true"><use href="#i-trash"></use></svg>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" colspan="3">Palette totals</th>
+              <td class="num"><%= fmt.number(totals.tesserae) %> tesserae</td>
+              <td class="num strong"><%= fmt.number(totals.sheets) %> sheets</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    <% } %>
+
+    <div class="panel-section">
+      <h3 class="section-label">Add a tesserae colour</h3>
+      <form method="post" action="/commissions/<%= commission.id %>/colors" class="form form--inline" novalidate>
+        <div class="field">
+          <label for="colour_name">Colour name</label>
+          <input id="colour_name" name="colour_name" type="text" value="<%= colourDraft.colour_name %>" placeholder="Cobalt 031"
+            aria-invalid="<%= colourErrors.colour_name ? 'true' : 'false' %>">
+          <% if (colourErrors.colour_name) { %><p class="field-error"><%= colourErrors.colour_name %></p><% } %>
+        </div>
+        <div class="field field--swatch">
+          <label for="hex">Swatch</label>
+          <input id="hex" name="hex" type="color" value="<%= colourDraft.hex %>">
+          <% if (colourErrors.hex) { %><p class="field-error"><%= colourErrors.hex %></p><% } %>
+        </div>
+        <div class="field">
+          <label for="material">Material</label>
+          <select id="material" name="material">
+            <option value="smalti"<%= colourDraft.material === 'smalti' ? ' selected' : '' %>>Smalti</option>
+            <option value="vitreous"<%= colourDraft.material === 'vitreous' ? ' selected' : '' %>>Vitreous glass</option>
+          </select>
+          <% if (colourErrors.material) { %><p class="field-error"><%= colourErrors.material %></p><% } %>
+        </div>
+        <div class="field field--small">
+          <label for="tessera_mm">Size (mm)</label>
+          <input id="tessera_mm" name="tessera_mm" type="number" inputmode="decimal" min="0.1" max="100" step="0.1"
+            value="<%= colourDraft.tessera_mm %>" placeholder="6"
+            aria-invalid="<%= colourErrors.tessera_mm ? 'true' : 'false' %>">
+          <% if (colourErrors.tessera_mm) { %><p class="field-error"><%= colourErrors.tessera_mm %></p><% } %>
+        </div>
+        <div class="field field--small">
+          <label for="tesserae_count">Tesserae count</label>
+          <input id="tesserae_count" name="tesserae_count" type="number" inputmode="numeric" min="1" max="1000000" step="1"
+            value="<%= colourDraft.tesserae_count %>" placeholder="450" required
+            aria-invalid="<%= colourErrors.tesserae_count ? 'true' : 'false' %>">
+          <% if (colourErrors.tesserae_count) { %><p class="field-error"><%= colourErrors.tesserae_count %></p><% } %>
+        </div>
+        <div class="field field--submit">
+          <button type="submit" class="btn btn-secondary" data-busy-label="Adding…">
+            <svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"></use></svg>
+            Add colour
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel panel--raise">
+    <header class="panel-head">
+      <h2 class="chip-label">Grouting &amp; fixing stages</h2>
+      <p class="panel-note">
+        <% if (activeStage) { %>Current stage: <strong><%= activeStage.label %></strong><% } else { %>All five stages are complete.<% } %>
+      </p>
+    </header>
+
+    <ol class="stage-list">
+      <% stages.forEach((stage, index) => { %>
+        <li class="stage stage--<%= stage.status %>">
+          <span class="stage-marker" aria-hidden="true">
+            <svg class="icon" aria-hidden="true"><use href="#i-<%= stage.status === 'done' ? 'check' : (stage.status === 'active' ? 'play' : 'dot') %>"></use></svg>
+          </span>
+          <div class="stage-body">
+            <div class="stage-head">
+              <h3 class="stage-title"><span class="stage-index"><%= index + 1 %></span> <%= stage.label %></h3>
+              <span class="chip chip--stage-<%= stage.status %>"><%= stage.status === 'done' ? 'Done' : (stage.status === 'active' ? 'Active' : 'Pending') %></span>
+            </div>
+            <% if (stage.status === 'active' && stageHints[stage.stage_key]) { %>
+              <p class="stage-hint-text"><%= stageHints[stage.stage_key] %></p>
+            <% } %>
+            <p class="stage-times">
+              <% if (stage.started_at) { %>Started <%= fmt.formatDateTime(stage.started_at) %><% } else { %>Not started yet<% } %>
+              <% if (stage.completed_at) { %> · Completed <%= fmt.formatDateTime(stage.completed_at) %><% } %>
+            </p>
+
+            <div class="stage-controls">
+              <% if (stage.status === 'active') { %>
+                <form method="post" action="/commissions/<%= commission.id %>/stages/<%= stage.id %>/advance" class="inline-form">
+                  <button type="submit" class="btn btn-secondary btn-sm" data-busy-label="Advancing…">
+                    <svg class="icon icon-sm" aria-hidden="true"><use href="#i-play"></use></svg>
+                    Complete stage
+                  </button>
+                </form>
+              <% } else if (stage.status === 'done') { %>
+                <form method="post" action="/commissions/<%= commission.id %>/stages/<%= stage.id %>/reopen" class="inline-form">
+                  <button type="submit" class="btn btn-ghost btn-sm" data-busy-label="Reopening…">
+                    <svg class="icon icon-sm" aria-hidden="true"><use href="#i-undo"></use></svg>
+                    Reopen
+                  </button>
+                </form>
+              <% } else { %>
+                <p class="stage-hint">Wait for the stage before this one.</p>
+              <% } %>
+
+              <form method="post" action="/commissions/<%= commission.id %>/stages/<%= stage.id %>/note" class="stage-note-form">
+                <label class="visually-hidden" for="note-<%= stage.id %>">Note for <%= stage.label %></label>
+                <input id="note-<%= stage.id %>" name="note" type="text" value="<%= stage.note %>" maxlength="280"
+                  placeholder="Bench note for this stage">
+                <button type="submit" class="btn btn-ghost btn-sm">Save note</button>
+              </form>
+            </div>
+          </div>
+        </li>
+      <% }) %>
+    </ol>
+  </section>
+</main>
+<%- include('../partials/foot') %>

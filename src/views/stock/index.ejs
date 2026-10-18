@@ -1,0 +1,150 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page">
+  <%- include('../partials/flash') %>
+
+  <header class="page-head">
+    <div class="page-head-main">
+      <p class="eyebrow">Glass room</p>
+      <h1>Smalti &amp; vitreous stock</h1>
+      <p class="page-sub">
+        <%= fmt.number(summary.smalti.sheets + summary.vitreous.sheets) %> sheets across
+        <%= fmt.number(summary.smalti.lots + summary.vitreous.lots) %> <%= fmt.plural(summary.smalti.lots + summary.vitreous.lots, 'lot') %> ·
+        <%= low.length %> at or below threshold
+      </p>
+    </div>
+  </header>
+
+  <section class="panel panel--raise panel--pad">
+    <header class="panel-head">
+      <h2 class="chip-label">Add a lot</h2>
+      <p class="panel-note">One row per material and colour — the sheet count is what a palette reserves against.</p>
+    </header>
+
+    <form method="post" action="/stock" class="form form--inline" novalidate>
+      <div class="field">
+        <label for="material">Material</label>
+        <select id="material" name="material">
+          <option value="smalti"<%= values.material === 'smalti' ? ' selected' : '' %>>Smalti</option>
+          <option value="vitreous"<%= values.material === 'vitreous' ? ' selected' : '' %>>Vitreous glass</option>
+        </select>
+        <% if (errors.material) { %><p class="field-error"><%= errors.material %></p><% } %>
+      </div>
+      <div class="field field--grow">
+        <label for="colour_name">Colour name</label>
+        <input id="colour_name" name="colour_name" type="text" value="<%= values.colour_name %>" placeholder="Cobalt 031"
+          aria-invalid="<%= errors.colour_name ? 'true' : 'false' %>">
+        <% if (errors.colour_name) { %><p class="field-error"><%= errors.colour_name %></p><% } %>
+      </div>
+      <div class="field field--swatch">
+        <label for="hex">Swatch</label>
+        <input id="hex" name="hex" type="color" value="<%= values.hex %>">
+        <% if (errors.hex) { %><p class="field-error"><%= errors.hex %></p><% } %>
+      </div>
+      <div class="field field--small">
+        <label for="sheets_on_hand">Sheets on hand</label>
+        <input id="sheets_on_hand" name="sheets_on_hand" type="number" inputmode="numeric" min="0" max="100000" step="1"
+          value="<%= values.sheets_on_hand %>" placeholder="12" required
+          aria-invalid="<%= errors.sheets_on_hand ? 'true' : 'false' %>">
+        <% if (errors.sheets_on_hand) { %><p class="field-error"><%= errors.sheets_on_hand %></p><% } %>
+      </div>
+      <div class="field field--small">
+        <label for="low_stock_threshold">Low-stock threshold</label>
+        <input id="low_stock_threshold" name="low_stock_threshold" type="number" inputmode="numeric" min="0" max="1000" step="1"
+          value="<%= values.low_stock_threshold %>" placeholder="2"
+          aria-invalid="<%= errors.low_stock_threshold ? 'true' : 'false' %>">
+        <% if (errors.low_stock_threshold) { %><p class="field-error"><%= errors.low_stock_threshold %></p><% } %>
+      </div>
+      <div class="field field--submit">
+        <button type="submit" class="btn btn-primary" data-busy-label="Adding…">
+          <svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"></use></svg>
+          Add lot
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <% const sections = [
+    { key: 'smalti', title: 'Smalti', lots: groups.smalti },
+    { key: 'vitreous', title: 'Vitreous glass', lots: groups.vitreous }
+  ]; %>
+
+  <% sections.forEach((section) => { %>
+    <section class="panel panel--raise">
+      <header class="panel-head">
+        <h2 class="chip-label"><%= section.title %></h2>
+        <p class="panel-note">
+          <%= fmt.number(section.lots.length) %> <%= fmt.plural(section.lots.length, 'lot') %> ·
+          <%= fmt.number(section.lots.reduce((sum, lot) => sum + lot.sheets_on_hand, 0)) %> sheets
+        </p>
+      </header>
+
+      <% if (section.lots.length === 0) { %>
+        <div class="empty empty--tight">
+          <p class="empty-title">No <%= section.title.toLowerCase() %> lots yet</p>
+          <p class="empty-body">Add the first one above — a colour name, a swatch and the sheets on hand is all it needs.</p>
+        </div>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="table table--stock">
+            <thead>
+              <tr>
+                <th scope="col">Colour</th>
+                <th scope="col" class="num">Sheets on hand</th>
+                <th scope="col" class="num">Threshold</th>
+                <th scope="col">Status</th>
+                <th scope="col">Adjust sheets</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% section.lots.forEach((lot) => { %>
+                <tr class="<%= lotErrors[lot.id] ? 'row--error' : '' %>">
+                  <td data-label="Colour">
+                    <span class="colour-cell">
+                      <span class="swatch" style="background: <%= lot.hex %>" aria-hidden="true"></span>
+                      <span>
+                        <span class="colour-name"><%= lot.colour_name %></span>
+                        <span class="colour-hex"><%= lot.hex %></span>
+                      </span>
+                    </span>
+                  </td>
+                  <td data-label="Sheets on hand" class="num strong"><%= fmt.number(lot.sheets_on_hand) %></td>
+                  <td data-label="Threshold" class="num muted"><%= fmt.number(lot.low_stock_threshold) %></td>
+                  <td data-label="Status">
+                    <% if (lot.sheets_on_hand <= lot.low_stock_threshold) { %>
+                      <span class="chip chip--low">Low · <%= fmt.number(lot.sheets_on_hand) %> left</span>
+                    <% } else { %>
+                      <span class="chip chip--ok">In stock</span>
+                    <% } %>
+                  </td>
+                  <td data-label="Adjust sheets">
+                    <form method="post" action="/stock/<%= lot.id %>/adjust" class="adjust-form" novalidate>
+                      <label class="visually-hidden" for="delta-<%= lot.id %>">Sheets to add or remove for <%= lot.colour_name %></label>
+                      <input id="delta-<%= lot.id %>" name="delta" type="number" inputmode="numeric" step="1"
+                        value="<%= lotDraft[lot.id] || '' %>" placeholder="−3 or 5"
+                        aria-invalid="<%= lotErrors[lot.id] ? 'true' : 'false' %>"
+                        <% if (lotErrors[lot.id]) { %>aria-describedby="delta-error-<%= lot.id %>"<% } %>>
+                      <button type="submit" class="btn btn-secondary btn-sm" data-busy-label="Adjusting…">Adjust</button>
+                    </form>
+                    <% if (lotErrors[lot.id]) { %>
+                      <p class="field-error" id="delta-error-<%= lot.id %>"><%= lotErrors[lot.id] %></p>
+                    <% } %>
+                  </td>
+                  <td class="row-actions" data-label="Actions">
+                    <form method="post" action="/stock/<%= lot.id %>/delete"
+                      data-confirm="Remove the <%= lot.colour_name %> lot from the glass room?">
+                      <button type="submit" class="btn btn-ghost btn-sm" aria-label="Delete the <%= lot.colour_name %> lot">
+                        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-trash"></use></svg>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </section>
+  <% }) %>
+</main>
+<%- include('../partials/foot') %>

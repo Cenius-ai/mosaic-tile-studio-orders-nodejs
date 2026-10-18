@@ -1,0 +1,28 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page page--narrow">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/commissions">Commissions</a>
+    <span aria-hidden="true">/</span>
+    <span>New commission</span>
+  </nav>
+
+  <header class="page-head">
+    <div class="page-head-main">
+      <p class="eyebrow">New work</p>
+      <h1>Commission a mural</h1>
+      <p class="page-sub">The palette and the five workshop stages are created with the commission.</p>
+    </div>
+  </header>
+
+  <section class="panel panel--raise panel--pad">
+    <%- include('../partials/commission-form', {
+      values: values,
+      errors: errors,
+      formAction: '/commissions',
+      submitLabel: 'Create commission',
+      busyLabel: 'Creating…',
+      cancelHref: '/commissions'
+    }) %>
+  </section>
+</main>
+<%- include('../partials/foot') %>

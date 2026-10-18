@@ -1,0 +1,143 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page">
+  <%- include('../partials/flash') %>
+
+  <header class="page-head">
+    <div class="page-head-main">
+      <p class="eyebrow">Studio overview</p>
+      <h1>What needs your hands today</h1>
+      <p class="page-sub">
+        <%= fmt.number(counts.total) %> <%= fmt.plural(counts.total, 'commission') %> on the books ·
+        <%= fmt.number(stock.smalti.sheets + stock.vitreous.sheets) %> sheets of glass on hand ·
+        <%= low.length %> <%= fmt.plural(low.length, 'lot') %> at threshold
+      </p>
+    </div>
+    <div class="page-head-actions">
+      <a class="btn btn-primary" href="/commissions/new">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"></use></svg>
+        New commission
+      </a>
+      <a class="btn btn-secondary" href="/stock">Open glass room</a>
+    </div>
+  </header>
+
+  <section class="stat-band" aria-label="Commission counts by status">
+    <a class="stat stat--quoted" href="/commissions">
+      <span class="stat-label">Quoted</span>
+      <span class="stat-value"><%= fmt.number(counts.quoted) %></span>
+      <span class="stat-note">waiting on the client</span>
+    </a>
+    <a class="stat stat--progress" href="/commissions">
+      <span class="stat-label">In progress</span>
+      <span class="stat-value"><%= fmt.number(counts.in_progress) %></span>
+      <span class="stat-note">in the workshop</span>
+    </a>
+    <a class="stat stat--done" href="/commissions">
+      <span class="stat-label">Completed</span>
+      <span class="stat-value"><%= fmt.number(counts.completed) %></span>
+      <span class="stat-note">fixed and handed over</span>
+    </a>
+    <a class="stat stat--stock" href="/stock">
+      <span class="stat-label">Sheets on hand</span>
+      <span class="stat-value"><%= fmt.number(stock.smalti.sheets + stock.vitreous.sheets) %></span>
+      <span class="stat-note"><%= fmt.number(stock.smalti.sheets) %> smalti · <%= fmt.number(stock.vitreous.sheets) %> vitreous</span>
+    </a>
+  </section>
+
+  <div class="dash-grid">
+    <section class="panel panel--raise">
+      <header class="panel-head">
+        <h2 class="chip-label">Recent commissions</h2>
+        <a class="link-quiet" href="/commissions">All <%= fmt.number(counts.total) %> <svg class="icon icon-sm" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+      </header>
+
+      <% if (recent.length === 0) { %>
+        <div class="empty">
+          <p class="empty-title">No commissions yet</p>
+          <p class="empty-body">Start with the mural you are quoting — add its palette and the sheet maths follows automatically.</p>
+          <a class="btn btn-primary" href="/commissions/new">Create your first commission</a>
+        </div>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Commission</th>
+                <th scope="col">Client</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="num">Sheets</th>
+                <th scope="col">Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recent.forEach((commission) => { %>
+                <tr>
+                  <td data-label="Commission">
+                    <a class="row-link" href="/commissions/<%= commission.id %>"><%= commission.title %></a>
+                    <span class="row-sub"><%= commission.colourCount %> <%= fmt.plural(commission.colourCount, 'colour') %> · <%= fmt.dimensions(commission.width_cm, commission.height_cm) %></span>
+                  </td>
+                  <td data-label="Client" class="muted"><%= commission.client_name || '—' %></td>
+                  <td data-label="Status">
+                    <span class="chip chip--<%= fmt.statusToken(commission.status) %>"><%= fmt.statusLabel(commission.status) %></span>
+                  </td>
+                  <td data-label="Sheets" class="num"><%= fmt.number(commission.sheetTotal) %></td>
+                  <td data-label="Due" class="<%= commission.status !== 'completed' && fmt.isOverdue(commission.due_date) ? 'is-overdue' : 'muted' %>">
+                    <%= fmt.dueLabel(commission.due_date) %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </section>
+
+    <div class="dash-side">
+      <section class="panel panel--raise">
+        <header class="panel-head">
+          <h2 class="chip-label">Stages in progress</h2>
+        </header>
+        <% if (stages.length === 0) { %>
+          <p class="panel-empty">Nothing on the bench — every commission is completed.</p>
+        <% } else { %>
+          <ul class="stage-mini-list">
+            <% stages.forEach((stage) => { %>
+              <li class="stage-mini">
+                <span class="stage-mini-dot" aria-hidden="true"></span>
+                <div class="stage-mini-body">
+                  <a class="row-link" href="/commissions/<%= stage.commission_id %>"><%= stage.title %></a>
+                  <p class="stage-mini-stage"><%= stage.label %></p>
+                  <p class="stage-mini-meta"><%= stage.client_name || 'No client' %> · <%= fmt.dueLabel(stage.due_date) %></p>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </section>
+
+      <section class="panel panel--raise">
+        <header class="panel-head">
+          <h2 class="chip-label">Low glass</h2>
+          <a class="link-quiet" href="/stock">Restock <svg class="icon icon-sm" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+        </header>
+        <% if (low.length === 0) { %>
+          <p class="panel-empty">Every lot is above its low-stock threshold.</p>
+        <% } else { %>
+          <ul class="stock-mini-list">
+            <% low.forEach((lot) => { %>
+              <li class="stock-mini">
+                <span class="swatch" style="background: <%= lot.hex %>" aria-hidden="true"></span>
+                <div class="stock-mini-body">
+                  <p class="stock-mini-name"><%= lot.colour_name %></p>
+                  <p class="stock-mini-meta"><%= materialLabels[lot.material] %> · threshold <%= fmt.number(lot.low_stock_threshold) %></p>
+                </div>
+                <span class="chip chip--low"><%= fmt.number(lot.sheets_on_hand) %> <%= fmt.plural(lot.sheets_on_hand, 'sheet') %></span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </section>
+    </div>
+  </div>
+</main>
+<%- include('../partials/foot') %>

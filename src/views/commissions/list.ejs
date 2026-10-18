@@ -1,0 +1,71 @@
+<%- include('../partials/head') %>
+<main id="main" class="shell page">
+  <%- include('../partials/flash') %>
+
+  <header class="page-head">
+    <div class="page-head-main">
+      <p class="eyebrow">Order book</p>
+      <h1>Commissions</h1>
+      <p class="page-sub">
+        <%= fmt.number(commissions.length) %> <%= fmt.plural(commissions.length, 'mural') %> ·
+        new commissioned work lands at the top of this list.
+      </p>
+    </div>
+    <div class="page-head-actions">
+      <a class="btn btn-primary" href="/commissions/new">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"></use></svg>
+        New commission
+      </a>
+    </div>
+  </header>
+
+  <section class="panel panel--raise">
+    <% if (commissions.length === 0) { %>
+      <div class="empty">
+        <p class="empty-title">No commissions yet</p>
+        <p class="empty-body">
+          Start with the mural you are quoting — a title, a client and the size is enough. The palette and the
+          five workshop stages come with it.
+        </p>
+        <a class="btn btn-primary" href="/commissions/new">Create your first commission</a>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table class="table table--commissions">
+          <thead>
+            <tr>
+              <th scope="col">Commission</th>
+              <th scope="col">Client</th>
+              <th scope="col">Status</th>
+              <th scope="col">Size</th>
+              <th scope="col" class="num">Tesserae</th>
+              <th scope="col" class="num">Sheets</th>
+              <th scope="col">Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% commissions.forEach((commission) => { %>
+              <tr>
+                <td data-label="Commission">
+                  <a class="row-link" href="/commissions/<%= commission.id %>"><%= commission.title %></a>
+                  <span class="row-sub"><%= commission.colourCount %> <%= fmt.plural(commission.colourCount, 'colour') %> in the palette</span>
+                </td>
+                <td data-label="Client" class="muted"><%= commission.client_name || '—' %></td>
+                <td data-label="Status">
+                  <span class="chip chip--<%= fmt.statusToken(commission.status) %>"><%= fmt.statusLabel(commission.status) %></span>
+                </td>
+                <td data-label="Size" class="muted"><%= fmt.dimensions(commission.width_cm, commission.height_cm) %></td>
+                <td data-label="Tesserae" class="num"><%= fmt.number(commission.tesseraTotal) %></td>
+                <td data-label="Sheets" class="num"><%= fmt.number(commission.sheetTotal) %></td>
+                <td data-label="Due" class="<%= commission.status !== 'completed' && fmt.isOverdue(commission.due_date) ? 'is-overdue' : 'muted' %>">
+                  <%= fmt.dueLabel(commission.due_date) %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+</main>
+<%- include('../partials/foot') %>

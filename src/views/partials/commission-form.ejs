@@ -1,0 +1,63 @@
+<form method="post" action="<%= formAction %>" class="form form--wide" novalidate>
+  <div class="form-row">
+    <div class="field field--grow">
+      <label for="title">Commission title <span class="req" aria-hidden="true">*</span></label>
+      <input id="title" name="title" type="text" value="<%= values.title %>" required
+        placeholder="Harbour Light Mosaic"
+        aria-invalid="<%= errors.title ? 'true' : 'false' %>"
+        <% if (errors.title) { %>aria-describedby="title-error"<% } %>>
+      <% if (errors.title) { %><p class="field-error" id="title-error"><%= errors.title %></p><% } %>
+    </div>
+    <div class="field field--grow">
+      <label for="client_name">Client</label>
+      <input id="client_name" name="client_name" type="text" value="<%= values.client_name %>"
+        placeholder="Ferry Terminal Trust" autocomplete="organization">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="field">
+      <label for="width_cm">Width (cm)</label>
+      <input id="width_cm" name="width_cm" type="number" inputmode="decimal" min="0.1" max="5000" step="0.1"
+        value="<%= values.width_cm %>" placeholder="180"
+        aria-invalid="<%= errors.width_cm ? 'true' : 'false' %>"
+        <% if (errors.width_cm) { %>aria-describedby="width_cm-error"<% } %>>
+      <% if (errors.width_cm) { %><p class="field-error" id="width_cm-error"><%= errors.width_cm %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="height_cm">Height (cm)</label>
+      <input id="height_cm" name="height_cm" type="number" inputmode="decimal" min="0.1" max="5000" step="0.1"
+        value="<%= values.height_cm %>" placeholder="90"
+        aria-invalid="<%= errors.height_cm ? 'true' : 'false' %>"
+        <% if (errors.height_cm) { %>aria-describedby="height_cm-error"<% } %>>
+      <% if (errors.height_cm) { %><p class="field-error" id="height_cm-error"><%= errors.height_cm %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status" aria-invalid="<%= errors.status ? 'true' : 'false' %>">
+        <option value="quoted"<%= values.status === 'quoted' ? ' selected' : '' %>>Quoted</option>
+        <option value="in_progress"<%= values.status === 'in_progress' ? ' selected' : '' %>>In progress</option>
+        <option value="completed"<%= values.status === 'completed' ? ' selected' : '' %>>Completed</option>
+      </select>
+      <% if (errors.status) { %><p class="field-error"><%= errors.status %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="due_date">Due date</label>
+      <input id="due_date" name="due_date" type="date" value="<%= values.due_date %>"
+        aria-invalid="<%= errors.due_date ? 'true' : 'false' %>"
+        <% if (errors.due_date) { %>aria-describedby="due_date-error"<% } %>>
+      <% if (errors.due_date) { %><p class="field-error" id="due_date-error"><%= errors.due_date %></p><% } %>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="notes">Workshop notes</label>
+    <textarea id="notes" name="notes" rows="4" placeholder="Grout colour, fixing method, client preferences…"><%= values.notes %></textarea>
+    <p class="field-hint">Title is required. Dimensions are optional, but must be positive numbers of centimetres.</p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary" data-busy-label="<%= busyLabel %>"><%= submitLabel %></button>
+    <a class="btn btn-ghost" href="<%= cancelHref %>">Cancel</a>
+  </div>
+</form>
