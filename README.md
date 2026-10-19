@@ -44,7 +44,7 @@ See [`INSTALL.md`](INSTALL.md) for full setup and usage instructions.
 
 ## Architecture
 
-One command (`./install.sh`) covers dependency setup and demo-data seeding. The Node.js codebase (73 files) is self-contained — no external services needed to evaluate it. Top-level layout: `data/`, `public/`, `scripts/`, `src/`, `test/`. Full setup details: [`INSTALL.md`](INSTALL.md).
+One command (`./install.sh`) covers dependency setup and demo-data seeding. The Node.js codebase (60 files) is self-contained — no external services needed to evaluate it. Top-level layout: `data/`, `public/`, `scripts/`, `src/`, `test/`. Full setup details: [`INSTALL.md`](INSTALL.md).
 
 ## Usage guide
 
